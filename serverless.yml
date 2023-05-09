@@ -1,0 +1,46 @@
+service: notion-reader
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: dev
+  region: us-west-2
+  # IAMロール設定
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:ListObject
+            - s3:DeleteObject
+          Resource: "arn:aws:s3:::${S#_BUCKET_NAME}/*"
+
+functions:
+  functionName:
+    handler: handler.handler
+    events:
+      - http:
+          path: some/path
+          method: get
+
+resources:
+  Resources:
+    # S3バケット作成
+    YourBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${S#_BUCKET_NAME}
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: non-linux
+
+# デプロイ後に環境変数を設定してください
+# 例:
+#   environment:
+#     YOUR_VARIABLE: ${env:YOUR_VARIABLE}
